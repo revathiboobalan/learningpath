@@ -1,0 +1,712 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Personal Learning Path Generator</title>
+
+<style>
+:root {
+  --bg: #0b1020;
+  --panel: #131b30;
+  --panel2: #19243d;
+  --text: #edf3ff;
+  --muted: #a2afc8;
+  --accent: #8b7cff;
+  --cyan: #5de4e8;
+  --border: #293653;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(ellipse at top left, #252653 0, transparent 42%),
+    var(--bg);
+  min-height: 100vh;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 7%;
+  border-bottom: 1px solid var(--border);
+}
+
+.brand {
+  font-size: 19px;
+  font-weight: bold;
+}
+
+.brand span {
+  color: var(--cyan);
+}
+
+.tag {
+  color: var(--cyan);
+  border: 1px solid #28666b;
+  background: #102c36;
+  padding: 7px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+main {
+  max-width: 1100px;
+  margin: auto;
+  padding: 45px 22px 70px;
+}
+
+.hero {
+  text-align: center;
+  margin-bottom: 34px;
+}
+
+.hero h1 {
+  font-size: clamp(30px, 5vw, 48px);
+  margin: 14px 0;
+  line-height: 1.15;
+}
+
+.gradient {
+  background: linear-gradient(90deg, var(--accent), var(--cyan));
+  color: transparent;
+  background-clip: text;
+}
+
+.hero p {
+  color: var(--muted);
+  line-height: 1.7;
+  max-width: 650px;
+  margin: auto;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 22px;
+  align-items: start;
+}
+
+.panel {
+  background: rgba(19, 27, 48, 0.95);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 24px;
+}
+
+.panel h2 {
+  font-size: 19px;
+  margin-top: 0;
+}
+
+label {
+  display: block;
+  color: #d6def1;
+  font-size: 13px;
+  margin: 18px 0 8px;
+}
+
+input, select {
+  width: 100%;
+  background: #0c1427;
+  color: white;
+  border: 1px solid #344362;
+  border-radius: 9px;
+  padding: 12px;
+  outline: none;
+  font-size: 14px;
+}
+
+input:focus, select:focus {
+  border-color: var(--cyan);
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 10px;
+  padding: 13px 16px;
+  font-size: 14px;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
+
+.generate {
+  width: 100%;
+  margin-top: 23px;
+  background: linear-gradient(100deg, var(--accent), #5b9cff);
+  color: white;
+}
+
+.hint {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.empty {
+  text-align: center;
+  padding: 48px 15px;
+  color: var(--muted);
+}
+
+.empty .symbol {
+  font-size: 44px;
+}
+
+.empty h3 {
+  color: white;
+}
+
+.result-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.result-header h2 {
+  margin-bottom: 7px;
+}
+
+.small-btn {
+  background: var(--panel2);
+  color: white;
+  border: 1px solid var(--border);
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 22px 0;
+}
+
+.stat {
+  background: #0d162a;
+  border: 1px solid var(--border);
+  padding: 14px 10px;
+  border-radius: 12px;
+}
+
+.stat strong {
+  display: block;
+  color: var(--cyan);
+  font-size: 20px;
+  margin-bottom: 5px;
+}
+
+.stat span {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.progress-track {
+  height: 7px;
+  background: #27344c;
+  border-radius: 20px;
+  overflow: hidden;
+  margin: 10px 0 22px;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--cyan));
+  transition: width 0.3s;
+}
+
+.phase {
+  border: 1px solid var(--border);
+  background: #101a2e;
+  border-radius: 13px;
+  padding: 17px;
+  margin: 14px 0;
+}
+
+.phase-top {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.phase input[type="checkbox"] {
+  width: 18px;
+  margin-top: 4px;
+  accent-color: #8b7cff;
+}
+
+.phase h3 {
+  font-size: 15px;
+  margin: 0 0 7px;
+}
+
+.phase p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 7px 0;
+}
+
+.phase .duration {
+  display: inline-block;
+  font-size: 11px;
+  color: var(--cyan);
+  background: #153039;
+  padding: 5px 8px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.resources {
+  border-top: 1px solid var(--border);
+  margin-top: 12px;
+  padding-top: 12px;
+}
+
+.resources a {
+  display: inline-block;
+  color: #a9c6ff;
+  font-size: 12px;
+  margin: 5px 12px 4px 0;
+  text-decoration: none;
+}
+
+.resources a:hover {
+  text-decoration: underline;
+  color: var(--cyan);
+}
+
+.complete h3 {
+  text-decoration: line-through;
+  color: #9da9bd;
+}
+
+.notice {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+  margin-top: 18px;
+}
+
+footer {
+  text-align: center;
+  padding: 25px;
+  color: var(--muted);
+  font-size: 12px;
+  border-top: 1px solid var(--border);
+}
+
+@media (max-width: 760px) {
+  header {
+    padding: 18px;
+  }
+
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  main {
+    padding: 30px 14px 45px;
+  }
+
+  .panel {
+    padding: 19px;
+  }
+
+  .summary {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="brand">Path<span>AI</span> ✦</div>
+  <div class="tag">PERSONAL LEARNING AI</div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="tag">YOUR FUTURE STARTS HERE</div>
+    <h1>Build your own <span class="gradient">learning path.</span></h1>
+    <p>
+      Choose a skill, define your goal, and discover a step-by-step
+      learning roadmap with useful resources and practical projects.
+    </p>
+  </section>
+
+  <div class="layout">
+
+    <section class="panel">
+      <h2>🎯 Personalize your path</h2>
+      <p class="hint">Tell us what you want to learn.</p>
+
+      <form id="learningForm">
+        <label for="name">Your name (optional)</label>
+        <input id="name" type="text" placeholder="Enter your name">
+
+        <label for="skill">Choose a computer skill</label>
+        <select id="skill" required>
+          <option value="web">Web Development</option>
+          <option value="python">Python Programming</option>
+          <option value="java">Java Programming</option>
+          <option value="dsa">Data Structures & Algorithms</option>
+          <option value="data">Data Science & Machine Learning</option>
+          <option value="cyber">Cybersecurity Fundamentals</option>
+          <option value="sql">Database & SQL</option>
+          <option value="uiux">UI/UX Design</option>
+        </select>
+
+        <label for="level">Current skill level</label>
+        <select id="level">
+          <option value="beginner">Beginner — starting from zero</option>
+          <option value="intermediate">Intermediate — know the basics</option>
+          <option value="advanced">Advanced — improve existing skills</option>
+        </select>
+
+        <label for="goal">Your learning goal</label>
+        <select id="goal">
+          <option value="career">Prepare for a career</option>
+          <option value="project">Build a real-world project</option>
+          <option value="college">Improve college knowledge</option>
+          <option value="interview">Prepare for interviews</option>
+        </select>
+
+        <label for="hours">Study time per day</label>
+        <select id="hours">
+          <option value="1">1 hour</option>
+          <option value="2" selected>2 hours</option>
+          <option value="3">3 hours</option>
+          <option value="4">4 hours</option>
+        </select>
+
+        <label for="weeks">Target duration</label>
+        <select id="weeks">
+          <option value="2">2 weeks</option>
+          <option value="4" selected>4 weeks</option>
+          <option value="8">8 weeks</option>
+          <option value="12">12 weeks</option>
+        </select>
+
+        <button type="submit" class="generate">
+          ✨ Generate My Learning Path
+        </button>
+      </form>
+
+      <p class="notice">
+        This demo generates a personalized roadmap using built-in
+        learning templates. It does not send your details to an AI service.
+      </p>
+    </section>
+
+    <section class="panel" id="output" aria-live="polite">
+      <div class="empty">
+        <div class="symbol">🧠</div>
+        <h3>Your roadmap awaits</h3>
+        <p>Choose your skill and preferences, then click Generate.</p>
+        <p class="hint">Your learning journey will appear here.</p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer>
+  PathAI · Learn at your own pace · Build skills for the future
+</footer>
+
+<script>
+const resources = {
+  web: [
+    ["MDN Web Docs", "https://developer.mozilla.org/en-US/docs/Learn_web_development"],
+    ["freeCodeCamp", "https://www.freecodecamp.org/learn/"],
+    ["Frontend Roadmap", "https://roadmap.sh/frontend"]
+  ],
+  python: [
+    ["Official Python Tutorial", "https://docs.python.org/3/tutorial/"],
+    ["W3Schools Python", "https://www.w3schools.com/python/"],
+    ["Python Roadmap", "https://roadmap.sh/python"]
+  ],
+  java: [
+    ["Dev.java Tutorials", "https://dev.java/learn/"],
+    ["W3Schools Java", "https://www.w3schools.com/java/"],
+    ["Java Roadmap", "https://roadmap.sh/java"]
+  ],
+  dsa: [
+    ["VisuAlgo", "https://visualgo.net/en"],
+    ["GeeksforGeeks", "https://www.geeksforgeeks.org/"],
+    ["DSA Roadmap", "https://roadmap.sh/datastructures-and-algorithms"]
+  ],
+  data: [
+    ["Kaggle Learn", "https://www.kaggle.com/learn"],
+    ["Google ML Crash Course", "https://developers.google.com/machine-learning/crash-course"],
+    ["AI & Data Science Roadmap", "https://roadmap.sh/ai-data-scientist"]
+  ],
+  cyber: [
+    ["Cisco Skills for All", "https://skillsforall.com/"],
+    ["TryHackMe", "https://tryhackme.com/"],
+    ["Cybersecurity Roadmap", "https://roadmap.sh/cyber-security"]
+  ],
+  sql: [
+    ["SQLBolt", "https://sqlbolt.com/"],
+    ["W3Schools SQL", "https://www.w3schools.com/sql/"],
+    ["SQL Roadmap", "https://roadmap.sh/sql"]
+  ],
+  uiux: [
+    ["Figma Learn", "https://help.figma.com/hc/en-us"],
+    ["Google UX Design", "https://grow.google/certificates/ux-design/"],
+    ["UX Design Roadmap", "https://roadmap.sh/ux-design"]
+  ]
+};
+
+const paths = {
+  web: {
+    title: "Web Development",
+    phases: [
+      ["Web foundations", "Learn how websites work, HTML structure, headings, links and forms.", "Build a personal profile page."],
+      ["CSS and responsive design", "Learn selectors, colors, box model, Flexbox, Grid and media queries.", "Design a responsive portfolio."],
+      ["JavaScript essentials", "Study variables, functions, arrays, objects, events and DOM manipulation.", "Build a to-do list or quiz."],
+      ["Portfolio project", "Combine HTML, CSS and JavaScript. Test, document and publish your work.", "Publish a portfolio website."]
+    ]
+  },
+  python: {
+    title: "Python Programming",
+    phases: [
+      ["Python fundamentals", "Learn variables, data types, input/output, operators and conditions.", "Create a simple calculator."],
+      ["Control flow and functions", "Practise loops, functions, parameters and reusable code.", "Build a number guessing game."],
+      ["Data structures and files", "Learn lists, dictionaries, sets, exceptions and file handling.", "Create a contact book."],
+      ["Project and problem-solving", "Use modules, debugging and problem-solving to develop an application.", "Build a task tracker or expense organiser."]
+    ]
+  },
+  java: {
+    title: "Java Programming",
+    phases: [
+      ["Java basics", "Understand variables, data types, operators and input/output.", "Build a calculator."],
+      ["Control flow and methods", "Learn conditions, loops, methods and arrays.", "Create a student marks system."],
+      ["Object-oriented programming", "Study classes, objects, inheritance, encapsulation and polymorphism.", "Model a library system."],
+      ["Collections and project", "Practise collections, exceptions and basic application structure.", "Build a console-based management app."]
+    ]
+  },
+  dsa: {
+    title: "Data Structures & Algorithms",
+    phases: [
+      ["Programming foundations", "Revise one programming language, loops, functions and arrays.", "Solve basic coding problems."],
+      ["Core data structures", "Learn linked lists, stacks, queues, hash tables and their use cases.", "Implement a stack and queue."],
+      ["Algorithms", "Study searching, sorting, recursion and time complexity.", "Compare sorting algorithms."],
+      ["Trees and interview practice", "Explore trees, graphs, traversals and problem-solving patterns.", "Complete a set of practice problems."]
+    ]
+  },
+  data: {
+    title: "Data Science & Machine Learning",
+    phases: [
+      ["Python and maths foundations", "Learn Python basics, statistics, averages, probability and data types.", "Analyse a small dataset."],
+      ["Data analysis", "Practise tabular data, cleaning, charts and exploratory analysis.", "Create a dataset report."],
+      ["Machine learning basics", "Understand features, labels, training, testing and model evaluation.", "Train a simple prediction model."],
+      ["End-to-end mini project", "Prepare data, compare results and explain model limitations.", "Build a documented prediction project."]
+    ]
+  },
+  cyber: {
+    title: "Cybersecurity Fundamentals",
+    phases: [
+      ["Computer and network basics", "Learn operating systems, IP addresses, DNS, HTTP and networking concepts.", "Draw a basic network diagram."],
+      ["Security fundamentals", "Study authentication, access control, encryption concepts and threat models.", "Create a personal security checklist."],
+      ["Safe lab practice", "Learn common web security concepts using authorised training labs.", "Complete beginner lab exercises."],
+      ["Defensive security project", "Explore logs, updates, backups and incident reporting.", "Write a security assessment for a sample system."]
+    ]
+  },
+  sql: {
+    title: "Database & SQL",
+    phases: [
+      ["Database fundamentals", "Understand tables, rows, columns, primary keys and relationships.", "Design a student database."],
+      ["SQL queries", "Learn SELECT, WHERE, ORDER BY, INSERT, UPDATE and DELETE.", "Create a library database."],
+      ["Joins and aggregation", "Practise JOIN, GROUP BY, aggregate functions and subqueries.", "Generate a sales report."],
+      ["Database mini project", "Learn relationships, constraints, basic normalization and transactions.", "Build a database for a college system."]
+    ]
+  },
+  uiux: {
+    title: "UI/UX Design",
+    phases: [
+      ["Design foundations", "Learn user needs, usability, visual hierarchy, spacing and typography.", "Review an everyday app."],
+      ["User research and wireframes", "Practise personas, user journeys, low-fidelity wireframes and task flows.", "Design a simple app flow."],
+      ["Visual design and prototypes", "Learn colors, components, accessibility and interactive prototypes.", "Create a clickable prototype."],
+      ["Testing and portfolio", "Collect feedback, test usability and explain design decisions.", "Present a case study."]
+    ]
+  }
+};
+
+const form = document.getElementById("learningForm");
+const output = document.getElementById("output");
+
+let currentPath = [];
+let completed = new Set();
+let currentTitle = "";
+
+function escapeHTML(value) {
+  return String(value).replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[char]);
+}
+
+function createRoadmap(event) {
+  event.preventDefault();
+
+  const name = document.getElementById("name").value.trim();
+  const skill = document.getElementById("skill").value;
+  const level = document.getElementById("level").value;
+  const goal = document.getElementById("goal").value;
+  const hours = Number(document.getElementById("hours").value);
+  const weeks = Number(document.getElementById("weeks").value);
+
+  const path = paths[skill];
+  currentTitle = path.title;
+  completed = new Set();
+
+  // Select a starting phase based on current knowledge.
+  let startIndex = level === "beginner" ? 0 :
+                   level === "intermediate" ? 1 : 2;
+
+  currentPath = path.phases.slice(startIndex);
+
+  // Adapt the plan to the selected goal.
+  const goalNotes = {
+    career: "Career focus: practise explaining concepts and document your work.",
+    project: "Project focus: spend extra time building, testing and improving.",
+    college: "College focus: write notes and revise the key concepts.",
+    interview: "Interview focus: practise explaining solutions and answering questions."
+  };
+
+  const totalDays = weeks * 7;
+  const studyHours = hours * totalDays;
+  const phaseDays = Math.max(1, Math.floor(totalDays / currentPath.length));
+
+  let html = `
+    <div class="result-header">
+      <div>
+        <h2>${name ? "Hey, " + escapeHTML(name) + "!" : "Your learning roadmap"}</h2>
+        <p class="hint">${escapeHTML(path.title)} · ${escapeHTML(level)} level</p>
+      </div>
+      <button type="button" class="small-btn" id="resetBtn">Reset</button>
+    </div>
+
+    <p class="hint">${escapeHTML(goalNotes[goal])}</p>
+
+    <div class="summary">
+      <div class="stat"><strong>${currentPath.length}</strong><span>Learning phases</span></div>
+      <div class="stat"><strong>${weeks} wk</strong><span>Target duration</span></div>
+      <div class="stat"><strong>${studyHours}h</strong><span>Planned study time*</span></div>
+    </div>
+
+    <div class="hint">Your progress: <span id="progressText">0% completed</span></div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <h2>🚀 Your step-by-step path</h2>
+  `;
+
+  currentPath.forEach((phase, index) => {
+    const phaseNumber = index + 1;
+    const duration = index === currentPath.length - 1
+      ? Math.max(1, totalDays - phaseDays * (currentPath.length - 1))
+      : phaseDays;
+
+    const phaseResources = resources[skill].map(resource => `
+      <a href="${resource[1]}" target="_blank" rel="noopener noreferrer">
+        ↗ ${escapeHTML(resource[0])}
+      </a>
+    `).join("");
+
+    html += `
+      <article class="phase" id="phase-${index}">
+        <div class="phase-top">
+          <input type="checkbox" class="phase-check"
+                 data-index="${index}" aria-label="Complete phase ${phaseNumber}">
+          <div>
+            <span class="duration">PHASE ${phaseNumber} · ABOUT ${duration} DAYS</span>
+            <h3>${escapeHTML(phase[0])}</h3>
+            <p>${escapeHTML(phase[1])}</p>
+            <p><strong>Practical task:</strong> ${escapeHTML(phase[2])}</p>
+          </div>
+        </div>
+        <div class="resources">
+          <p><strong>Recommended learning resources</strong></p>
+          ${phaseResources}
+        </div>
+      </article>
+    `;
+  });
+
+  html += `
+    <p class="notice">
+      *Study hours are estimates based on your selected schedule.
+      Actual completion time depends on your prior knowledge and practice.
+      Resource websites have their own terms, and some may offer paid content.
+    </p>
+  `;
+
+  output.innerHTML = html;
+
+  output.querySelectorAll(".phase-check").forEach(checkbox => {
+    checkbox.addEventListener("change", () => {
+      const index = Number(checkbox.dataset.index);
+      const card = document.getElementById("phase-" + index);
+
+      if (checkbox.checked) {
+        completed.add(index);
+        card.classList.add("complete");
+      } else {
+        completed.delete(index);
+        card.classList.remove("complete");
+      }
+
+      const percent = Math.round(
+        (completed.size / currentPath.length) * 100
+      );
+
+      document.getElementById("progressFill").style.width = percent + "%";
+      document.getElementById("progressText").textContent =
+        percent + "% completed";
+    });
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", () => {
+    form.reset();
+    currentPath = [];
+    completed = new Set();
+    currentTitle = "";
+    output.innerHTML = `
+      <div class="empty">
+        <div class="symbol">🧠</div>
+        <h3>Your roadmap awaits</h3>
+        <p>Choose a skill and generate a new learning path.</p>
+      </div>
+    `;
+  });
+}
+
+form.addEventListener("submit", createRoadmap);
+</script>
+
+</body>
+</html>
